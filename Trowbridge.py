@@ -24,8 +24,8 @@ class Trowbridge:
         self.emg2 = data[:, 2]
         self.emg3 = data[:, 3]
         self.tor = data[:, 4]
-        self.pos = data[:, 5]#/57.2957795131 # convert to radians
-        self.angle = self.pos / 57.2957795131
+        self.pos = data[:, 5] /57.2957795131 # convert to radians
+        #self.angle = self.pos / 57.2957795131
         self.vel = data[:, 6]
         self.smooth_tor = []
         self.smooth_pos = []
@@ -74,7 +74,7 @@ class Trowbridge:
         plt.show()
 
     def find_rep(self, show_graph):
-        p_18, r_or_f = zero_crossing(self.smooth_pos, 18, 10, self.n - 2)
+        p_18, r_or_f = zero_crossing(self.smooth_pos, 0.4, 10, self.n - 2)
         rep = 0
         cnt = len(p_18)
         for i in range(0, cnt-3, 2):
@@ -86,9 +86,9 @@ class Trowbridge:
         if show_graph:
             plt.plot(self.pt, self.smooth_pos)
             for rep in range(self.n_reps):
-                plt.vlines(self.rep_start[rep], 10, 40, linestyles='dotted', colors='black')
-                plt.vlines(self.max_loc[rep], 10, 40, linestyles='dashed', colors='red')
-                plt.vlines(self.rep_end[rep], 10, 40, linestyles='dotted', colors='black')
+                plt.vlines(self.rep_start[rep], .1, .7, linestyles='dotted', colors='black')
+                plt.vlines(self.max_loc[rep], .1, .7, linestyles='dashed', colors='red')
+                plt.vlines(self.rep_end[rep], .1, .7, linestyles='dotted', colors='black')
             for i in range(len(p_18)):
                 plt.scatter(p_18[i], self.smooth_pos[p_18[i]])
             plt.show()
@@ -124,7 +124,7 @@ class Trowbridge:
             y = self.smooth_tor[self.rep_start[rep] : self.rep_end[rep]]
             plt.plot(x, y)
             plt.ylabel('Torque (Nm)')
-            plt.xlabel('Position (degrees)')
+            plt.xlabel('Angle (r)')
             plt.grid(True)
             plt.legend(['Rep 1', 'Rep 2', 'Rep 3', 'Rep 4', 'Rep 5', 'Rep 6', 'Rep 7', 'Rep 8', 'Rep 9', 'Rep 10'])
         plt.show()
