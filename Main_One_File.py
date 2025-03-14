@@ -7,6 +7,7 @@ fn = 'S1PS10WDPre.txt'
 file_name = mypath + fn
 p1 = Trowbridge(file_name) #, subject, cond, rom, trial)
 #p1.graph_residual()
+p1.plot_angle_deg_rad()
 p1.filter_data()
 p1.plot_all()
 p1.find_rep(False)  # change to True to view start, peak torque, end for each rep
