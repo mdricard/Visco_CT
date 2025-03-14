@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from BiomechTools import low_pass, zero_crossing, max_min, simpson_nonuniform, critically_damped
+import math
 
 class Trowbridge:
     n_reps = 0
@@ -14,6 +15,7 @@ class Trowbridge:
             temp = infile.readline()
             header = temp.split(',')
             self.n = int(header[0])
+            self.hor_limb_wt = float(header[1])
             self.sampling_rate = 1000
 
         data = np.loadtxt(fn, delimiter=',', skiprows=12)
@@ -22,7 +24,8 @@ class Trowbridge:
         self.emg2 = data[:, 2]
         self.emg3 = data[:, 3]
         self.tor = data[:, 4]
-        self.pos = data[:, 5]
+        self.pos = data[:, 5]#/57.2957795131 # convert to radians
+        self.angle = self.pos / 57.2957795131
         self.vel = data[:, 6]
         self.smooth_tor = []
         self.smooth_pos = []
@@ -30,6 +33,7 @@ class Trowbridge:
         self.rep_start = np.zeros(20, dtype=np.int32)
         self.max_loc = np.zeros(20, dtype=np.int32)
         self.rep_end = np.zeros(20, dtype=np.int32)
+
 
     def plot_all(self):
         plt.plot(self.pt, self.smooth_pos)
@@ -57,6 +61,17 @@ class Trowbridge:
                 max_location = i
                 max_val = self.smooth_pos[i]
         return max_location
+    
+    def plot_angle_deg_rad(self):
+        fig, ax1 = plt.subplots()
+        ax2 = ax1.twinx()
+        ax1.plot(self.pt, self.angle, 'g-')
+        ax2.plot(self.pt, self.pos, 'b-')
+        ax1.set_xlabel('time (s)')
+        ax1.set_ylabel('Angle (rad)', color='g')
+        ax2.set_ylabel('Angle (deg)', color='b')   
+        plt.legend(['Angle (rad)', 'Angle (deg)']) 
+        plt.show()
 
     def find_rep(self, show_graph):
         p_18, r_or_f = zero_crossing(self.smooth_pos, 18, 10, self.n - 2)
@@ -96,7 +111,7 @@ class Trowbridge:
         plt.show()
 
     def save_rep(self, rep, rep_name):
-        p = self.smooth_pos[self.rep_start[rep] - 200: self.rep_end[rep] + 200]
+        p = self.smooth_pos[self.rep_start[rep] - 200: self.rep_end[rep] + 200] 
         t = self.smooth_tor[self.rep_start[rep] - 200: self.rep_end[rep] + 200]
         t = self.smooth_tor[self.rep_start[rep] - 200: self.rep_end[rep] + 200]
         v = self.smooth_vel[self.rep_start[rep] - 200: self.rep_end[rep] + 200]
@@ -108,6 +123,10 @@ class Trowbridge:
             x = self.smooth_pos[self.rep_start[rep] : self.rep_end[rep]]
             y = self.smooth_tor[self.rep_start[rep] : self.rep_end[rep]]
             plt.plot(x, y)
+            plt.ylabel('Torque (Nm)')
+            plt.xlabel('Position (degrees)')
+            plt.grid(True)
+            plt.legend(['Rep 1', 'Rep 2', 'Rep 3', 'Rep 4', 'Rep 5', 'Rep 6', 'Rep 7', 'Rep 8', 'Rep 9', 'Rep 10'])
         plt.show()
 
     def print_results(self):
