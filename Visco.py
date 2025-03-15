@@ -12,30 +12,24 @@ class Visco:
     peak_torque = np.zeros(20)
     stiffness = np.zeros(20)
 
-    def __init__(self, fn, subject, cond, rom, trial):
+    def __init__(self, fn): #, subject, cond, rom, trial
         with open(fn) as infile:
             temp = infile.readline()
-            temp = infile.readline()
             header = temp.split(',')
-            self.n = int(header[7]) - 2
-            self.sampling_rate = int(header[8])
-            self.mass = float(header[9])
-            self.ht = float(header[10])
-            self.limblen = float(header[11])
-            self.attachmentlen = float(header[12])
-            self.gender = header[13]
-            self.subject = subject
-            self.cond = cond
-            self.rom = rom
-            self.trial = trial
-        data = np.genfromtxt(fn, delimiter=',', skip_header=2)
+            self.n = int(header[0])
+            self.hor_limb_wt = float(header[1])
+            self.sampling_rate = 1000
+
+        data = np.genfromtxt(fn, delimiter=',', skip_header=12)
         self.pt = data[:, 0]
-        self.tor = data[:, 1]
-        self.pos = data[:, 2]
-        self.vel = data[:, 3]
-        self.MHemg = data[:, 4]
-        self.VLemg = data[:, 5]
-        self.mmg = data[:, 6]
+        self.ga = data[:, 1]
+        self.so = data[:, 2]
+        self.ta = data[:, 3]
+        self.tor = data[:, 4]
+        self.pos = data[:, 5] #/57.2957795131 # convert to radians
+        #self.angle = self.pos / 57.2957795131
+        self.vel = data[:, 6]
+
 
         self.smooth_tor = []
         self.smooth_pos = []
@@ -49,8 +43,13 @@ class Visco:
     def plot_all(self):
         fig, ax1 = plt.subplots()
         ax2 = ax1.twinx()
-        ax1.plot(self.pt, self.tor)
-        ax2.plot(self.pt, self.pos)
+        ax1.plot(self.pt, self.smooth_tor, 'b-')
+        ax2.plot(self.pt, self.smooth_pos, 'r-')
+        ax1.set_ylabel('Torque')
+        ax2.set_ylabel('Angle') 
+        fig.tight_layout()
+        plt.grid(True)
+        plt.legend(['Torque', 'Angle'])
         plt.show()
 
     def filter_data(self):
@@ -92,7 +91,7 @@ class Visco:
         print('Frank Burns eats worms')
 
     def find_rep(self, show_graph):
-        p_18, r_or_f = zero_crossing(self.smooth_pos, 120, 10, self.n - 2)
+        p_18, r_or_f = zero_crossing(self.smooth_pos, reference_value=20, start=10, stop=self.n - 2)
         if r_or_f[0] == 'falling':      # make sure first point is falling as it pos passes reference (135 deg)
             start_pt = 0
             cnt = len(p_18)
@@ -123,9 +122,9 @@ class Visco:
         if show_graph:
             plt.plot(self.pt, self.smooth_pos)
             for rep in range(self.n_reps):
-                plt.vlines(self.rep_start[rep], 100, 180, linestyles='solid', colors='green')
-                plt.vlines(self.max_loc[rep], 100, 180, linestyles='dashed', colors='red')
-                plt.vlines(self.rep_end[rep], 100, 180, linestyles='dotted', colors='black')
+                plt.vlines(self.rep_start[rep], 10, 40, linestyles='solid', colors='green')
+                plt.vlines(self.max_loc[rep], 10, 40, linestyles='dashed', colors='red')
+                plt.vlines(self.rep_end[rep], 10, 40, linestyles='dotted', colors='black')
             for i in range(len(p_18)):
                 plt.scatter(p_18[i], self.smooth_pos[p_18[i]])
             plt.show()
@@ -162,6 +161,9 @@ class Visco:
         plt.plot(x, y)
         plt.scatter(x[max_tor_pt], y[max_tor_pt])
         plt.scatter(x[pos_minus_5_pt], y[pos_minus_5_pt])
+        plt.ylabel('Torque (Nm)')
+        plt.xlabel('Angle (deg)')
+        plt.grid(True)
         plt.show()
 
     def plot_torque_mmg(self, rep):
@@ -172,6 +174,7 @@ class Visco:
         ax1.set_ylabel('Torque')
         ax2.set_ylabel('mmg')
         fig.tight_layout()
+        plt.grid(True)
         plt.show()
 
     def plot_six(self):
@@ -182,7 +185,11 @@ class Visco:
             ax2.plot(self.mmg[self.rep_start[rep]: self.rep_end[rep]])
             ax1.set_ylabel('Torque')
             ax2.set_ylabel('mmg')
+            plt.grid(True)
             fig.tight_layout()
+        plt.grid(True)
+        plt.ylabel('Torque (Nm)')
+        plt.xlabel('Angle (r)')
         plt.show()
 
     def save_rep(self, rep, rep_name):
@@ -204,6 +211,9 @@ class Visco:
             plt.plot(x, y)
             plt.scatter(x[max_tor_pt], y[max_tor_pt])
             plt.scatter(x[pos_minus_5_pt], y[pos_minus_5_pt])
+            plt.grid
+            plt.ylabel('Torque (Nm)')
+            plt.xlabel('Angle (r)') 
         plt.show()
 
     def print_results(self):

@@ -1,11 +1,13 @@
-from Trowbridge import *
+#from Trowbridge import *
+from Visco import *
 from os import listdir
 from os.path import isfile, join
 
 mypath = 'D:/CT REP Data/'
 fn = 'S1PS10WDPre.txt'
 file_name = mypath + fn
-p1 = Trowbridge(file_name) #, subject, cond, rom, trial)
+p1 = Visco(file_name)
+#p1 = Trowbridge(file_name) #, subject, cond, rom, trial)
 #p1.graph_residual()
 #p1.plot_angle_deg_rad()
 p1.filter_data()
