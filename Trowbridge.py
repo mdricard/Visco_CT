@@ -20,9 +20,9 @@ class Trowbridge:
 
         data = np.loadtxt(fn, delimiter=',', skiprows=12)
         self.pt = data[:, 0]
-        self.emg1 = data[:, 1]
-        self.emg2 = data[:, 2]
-        self.emg3 = data[:, 3]
+        self.ga = data[:, 1]
+        self.so = data[:, 2]
+        self.ta = data[:, 3]
         self.tor = data[:, 4]
         self.pos = data[:, 5] /57.2957795131 # convert to radians
         #self.angle = self.pos / 57.2957795131
